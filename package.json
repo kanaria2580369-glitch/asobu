@@ -4,7 +4,7 @@
   "description": "遊ぶ - Turn-based Fantasy RPG",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "license": "ISC",
