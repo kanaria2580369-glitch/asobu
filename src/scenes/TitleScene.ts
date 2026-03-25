@@ -47,24 +47,25 @@ export class TitleScene extends Phaser.Scene {
     line.lineBetween(100, 260, GAME_WIDTH - 100, 260);
 
     // 点滅テキスト
-    this.blinkText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60, 'PRESS SPACE TO START', {
+    this.blinkText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60, 'タップしてスタート', {
       fontFamily: '"Courier New", monospace',
       fontSize: '22px',
       color: '#ffffff',
     }).setOrigin(0.5);
 
     // 操作説明
-    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 60, '矢印キー: 移動  Space: 決定', {
+    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 60, '矢印キー / Dパッド: 移動  Space / タップ: 決定', {
       fontFamily: '"Courier New", monospace',
-      fontSize: '14px',
+      fontSize: '13px',
       color: '#888888',
     }).setOrigin(0.5);
 
-    // キー入力
+    // キー入力・タッチ入力
     const spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     const enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     spaceKey.once('down', () => this.startGame());
     enterKey.once('down', () => this.startGame());
+    this.input.once('pointerdown', () => this.startGame());
   }
 
   update(time: number, delta: number): void {
