@@ -7,6 +7,7 @@ import { Character } from '../entities/Character';
 import { INITIAL_PLAYER } from '../data/playerData';
 import { EncounterSystem } from '../systems/EncounterSystem';
 import { EnemyData } from '../data/enemies';
+import { VirtualPad } from '../ui/VirtualPad';
 
 // マップレイアウト (0=草, 1=壁, 2=道, 3=水)
 const MAP_DATA: TileType[][] = [
@@ -38,6 +39,7 @@ export class WorldScene extends Phaser.Scene {
   private playerX = 2; // タイル座標
   private playerY = 2;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private pad!: VirtualPad;
   private encounter!: EncounterSystem;
   private moving = false;
   private moveCooldown = 0;
@@ -64,6 +66,7 @@ export class WorldScene extends Phaser.Scene {
     this.drawMap();
     this.createPlayer();
     this.createUI();
+    this.pad = new VirtualPad(this, 100, GAME_HEIGHT - 100);
 
     this.cameras.main.setBounds(0, 0, MAP_COLS * TILE_SIZE, MAP_ROWS * TILE_SIZE);
     this.cameras.main.startFollow(this.playerSprite, true, 0.1, 0.1);
@@ -168,10 +171,10 @@ export class WorldScene extends Phaser.Scene {
     let dx = 0;
     let dy = 0;
 
-    if (this.cursors.left.isDown) dx = -1;
-    else if (this.cursors.right.isDown) dx = 1;
-    else if (this.cursors.up.isDown) dy = -1;
-    else if (this.cursors.down.isDown) dy = 1;
+    if (this.cursors.left.isDown || this.pad.left) dx = -1;
+    else if (this.cursors.right.isDown || this.pad.right) dx = 1;
+    else if (this.cursors.up.isDown || this.pad.up) dy = -1;
+    else if (this.cursors.down.isDown || this.pad.down) dy = 1;
 
     if (dx === 0 && dy === 0) return;
 

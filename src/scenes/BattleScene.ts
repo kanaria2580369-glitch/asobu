@@ -208,13 +208,28 @@ export class BattleScene extends Phaser.Scene {
   private createCommandUI(): void {
     const startX = 30;
     const startY = GAME_HEIGHT * 0.72;
-    this.commandTexts = COMMANDS.map((c, i) =>
-      this.add.text(startX + 16, startY + i * 26, c.label, {
+    this.commandTexts = COMMANDS.map((c, i) => {
+      const t = this.add.text(startX + 16, startY + i * 26, c.label, {
         fontFamily: '"Courier New", monospace',
         fontSize: '16px',
         color: '#ffffff',
-      })
-    );
+        padding: { x: 10, y: 8 },
+      }).setInteractive({ useHandCursor: false });
+
+      t.on('pointerdown', () => {
+        if (this.uiState !== 'command') return;
+        this.commandCursor = i;
+        this.updateCommandUI();
+        this.executeCommand(c.cmd);
+      });
+      t.on('pointerover', () => {
+        if (this.uiState !== 'command') return;
+        this.commandCursor = i;
+        this.updateCommandUI();
+      });
+
+      return t;
+    });
   }
 
   private createMessageUI(): void {

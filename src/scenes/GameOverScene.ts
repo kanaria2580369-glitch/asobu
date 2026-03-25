@@ -19,7 +19,7 @@ export class GameOverScene extends Phaser.Scene {
       strokeThickness: 6,
     }).setOrigin(0.5);
 
-    const restartText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 40, 'SPACE でタイトルへ', {
+    const restartText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 40, 'タップ / SPACE でタイトルへ', {
       fontFamily: '"Courier New", monospace',
       fontSize: '20px',
       color: '#aaaaaa',
@@ -33,11 +33,13 @@ export class GameOverScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    this.input.keyboard!.once('keydown-SPACE', () => {
+    const toTitle = () => {
       this.cameras.main.fadeOut(500, 0, 0, 0);
       this.cameras.main.once('camerafadeoutcomplete', () => {
         this.scene.start(SCENE_KEYS.TITLE);
       });
-    });
+    };
+    this.input.keyboard!.once('keydown-SPACE', toTitle);
+    this.input.once('pointerdown', toTitle);
   }
 }
