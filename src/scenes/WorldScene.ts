@@ -43,6 +43,7 @@ export class WorldScene extends Phaser.Scene {
   private encounter!: EncounterSystem;
   private moving = false;
   private moveCooldown = 0;
+  private transitioning = false; // エンカウント後のロック
 
   // UI
   private statusText!: Phaser.GameObjects.Text;
@@ -165,6 +166,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
+    if (this.transitioning) return;
     this.moveCooldown -= delta;
     if (this.moveCooldown > 0) return;
 
@@ -192,6 +194,7 @@ export class WorldScene extends Phaser.Scene {
     const tile = MAP_DATA[this.playerY][this.playerX] as TileType;
     const enemy = this.encounter.step(this.player.level, tile === TILE.GRASS);
     if (enemy) {
+      this.transitioning = true;
       this.cameras.main.fadeOut(300, 0, 0, 0);
       this.cameras.main.once('camerafadeoutcomplete', () => {
         this.scene.start(SCENE_KEYS.BATTLE, { player: this.player, enemy });
