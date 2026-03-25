@@ -269,9 +269,11 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private setupKeys(): void {
-    this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.upKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
-    this.downKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+    const kb = this.input.keyboard;
+    if (!kb) return;
+    this.spaceKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.upKey    = kb.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    this.downKey  = kb.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
   }
 
   // ---------- ゲームループ ----------
@@ -283,6 +285,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private handleCommandInput(): void {
+    if (!this.upKey || !this.downKey || !this.spaceKey) return;
     if (Phaser.Input.Keyboard.JustDown(this.upKey)) {
       this.commandCursor = (this.commandCursor - 1 + COMMANDS.length) % COMMANDS.length;
       this.updateCommandUI();
