@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>【緊急】重大なお知らせ</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --red: #ff0000;
+      --gold: #ffd700;
+      --white: #ffffff;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: 'Noto Serif JP', serif;
+      color: #fff;
+    }
+
+    /* ========== CANVAS LAYER ========== */
+    #bg-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    /* ========== STAGES ========== */
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .stage.active { opacity: 1; pointer-events: auto; }
+
+    /* ========== STAGE 1: EMERGENCY ALERT ========== */
+    #stage-alert {
+      background: rgba(0,0,0,0.85);
+    }
+    .alert-border {
+      border: 6px solid var(--red);
+      padding: 60px 80px;
+      text-align: center;
+      animation: border-pulse 0.3s steps(1) infinite;
+      max-width: 800px;
+    }
+    @keyframes border-pulse {
+      0%  { border-color: var(--red); box-shadow: 0 0 40px var(--red), inset 0 0 40px rgba(255,0,0,0.1); }
+      50% { border-color: #ff6600; box-shadow: 0 0 80px #ff6600, inset 0 0 80px rgba(255,100,0,0.2); }
+    }
+    .alert-label {
+      font-size: 14px;
+      letter-spacing: 8px;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      animation: blink-text 0.5s steps(1) infinite;
+    }
+    @keyframes blink-text { 50% { opacity: 0; } }
+    .alert-title {
+      font-size: clamp(36px, 6vw, 72px);
+      font-weight: 900;
+      color: var(--red);
+      text-shadow: 0 0 20px var(--red), 0 0 60px var(--red);
+      line-height: 1.2;
+    }
+    .alert-sub {
+      margin-top: 20px;
+      font-size: clamp(14px, 2vw, 22px);
+      color: #ccc;
+      letter-spacing: 4px;
+    }
+
+    /* ========== STAGE 2: COUNTDOWN ========== */
+    #stage-countdown { background: #000; }
+    .countdown-wrap {
+      text-align: center;
+    }
+    .countdown-label {
+      font-size: 18px;
+      letter-spacing: 12px;
+      color: #888;
+      margin-bottom: 30px;
+    }
+    #countdown-num {
+      font-size: clamp(120px, 25vw, 280px);
+      font-weight: 900;
+      color: var(--gold);
+      text-shadow: 0 0 40px var(--gold), 0 0 100px var(--gold), 0 0 200px #ff8800;
+      line-height: 1;
+      animation: countdown-zoom 1s ease-out forwards;
+    }
+    @keyframes countdown-zoom {
+      from { transform: scale(3); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .countdown-ring {
+      width: clamp(200px, 40vw, 400px);
+      height: clamp(200px, 40vw, 400px);
+      border: 4px solid rgba(255,215,0,0.3);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      position: absolute;
+      animation: spin 1s linear infinite;
+    }
+    .countdown-ring-2 {
+      width: clamp(220px, 44vw, 440px);
+      height: clamp(220px, 44vw, 440px);
+      border: 2px solid rgba(255,100,0,0.2);
+      border-bottom-color: #ff6600;
+      border-radius: 50%;
+      position: absolute;
+      animation: spin 1.5s linear infinite reverse;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ========== STAGE 3: DRAMATIC BUILD ========== */
+    #stage-build { background: rgba(0,0,0,0.9); }
+    .build-lines {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .build-line {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.22,1,0.36,1);
+      font-size: clamp(14px, 2.5vw, 28px);
+      color: #aaa;
+      letter-spacing: 4px;
+    }
+    .build-line.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .build-line.emphasis {
+      font-size: clamp(20px, 4vw, 48px);
+      color: var(--gold);
+      font-weight: 700;
+      text-shadow: 0 0 20px var(--gold);
+    }
+
+    /* ========== STAGE 4: HEAVENLY DESCENT ========== */
+    #stage-heaven {
+      background: radial-gradient(circle at 50% 0%, rgba(255,255,200,0.05) 0%, transparent 70%);
+    }
+    .heaven-rays {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .heaven-ray {
+      position: absolute;
+      top: 0;
+      width: 3px;
+      height: 120%;
+      background: linear-gradient(to bottom, rgba(255,255,200,0.6), transparent);
+      transform-origin: top center;
+      opacity: 0;
+    }
+    .heaven-title {
+      font-size: clamp(24px, 4vw, 52px);
+      font-weight: 900;
+      color: #fffde7;
+      text-shadow: 0 0 30px #fff, 0 0 80px #ffe082;
+      text-align: center;
+      letter-spacing: 6px;
+      z-index: 1;
+      line-height: 1.8;
+    }
+
+    /* ========== STAGE 5: EARTHQUAKE ========== */
+    #stage-quake { background: #000; }
+    .quake-warning {
+      font-size: clamp(48px, 10vw, 120px);
+      font-weight: 900;
+      color: #ff0000;
+      text-shadow: 0 0 20px #f00, 0 0 60px #f00;
+      letter-spacing: 8px;
+      animation: shake-big 0.1s linear infinite;
+    }
+    @keyframes shake-big {
+      0%,100%  { transform: translate(0,0) rotate(0deg); }
+      10%  { transform: translate(-8px,-8px) rotate(-1deg); }
+      20%  { transform: translate(8px,8px) rotate(1deg); }
+      30%  { transform: translate(-8px,8px) rotate(-1deg); }
+      40%  { transform: translate(8px,-8px) rotate(1deg); }
+      50%  { transform: translate(-8px,0) rotate(0deg); }
+      60%  { transform: translate(8px,0) rotate(-1deg); }
+      70%  { transform: translate(0,-8px) rotate(1deg); }
+      80%  { transform: translate(0,8px) rotate(-1deg); }
+      90%  { transform: translate(-4px,4px) rotate(0deg); }
+    }
+    .crack-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .crack {
+      position: absolute;
+      background: rgba(255,50,0,0.8);
+      transform-origin: top left;
+      box-shadow: 0 0 8px rgba(255,50,0,0.6);
+    }
+
+    /* ========== STAGE 6: ORCHESTRA ========== */
+    #stage-orchestra { background: #000; }
+    .orchestra-text {
+      font-size: clamp(14px, 2vw, 24px);
+      color: #666;
+      letter-spacing: 6px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .musical-notes {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .note {
+      position: absolute;
+      font-size: 40px;
+      opacity: 0;
+      animation: note-float linear forwards;
+    }
+    @keyframes note-float {
+      0%   { opacity: 0; transform: translateY(0) rotate(0deg) scale(0.5); }
+      10%  { opacity: 1; }
+      80%  { opacity: 0.8; }
+      100% { opacity: 0; transform: translateY(-300px) rotate(360deg) scale(1.5); }
+    }
+    .stage-title {
+      font-size: clamp(28px, 5vw, 60px);
+      font-weight: 900;
+      color: #fffde7;
+      text-shadow: 0 0 30px #ffe082;
+      text-align: center;
+      letter-spacing: 4px;
+      line-height: 1.6;
+    }
+
+    /* ========== STAGE 7: THE APOLOGY ========== */
+    #stage-apology {
+      background: #000;
+      cursor: pointer;
+    }
+    .apology-wrapper {
+      text-align: center;
+      position: relative;
+    }
+    #apology-text {
+      font-size: clamp(32px, 8vw, 100px);
+      font-weight: 900;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 2s ease;
+      text-shadow: none;
+      letter-spacing: 4px;
+    }
+    #apology-text.shown {
+      opacity: 1;
+    }
+    .apology-fine-print {
+      margin-top: 60px;
+      font-size: 12px;
+      color: #333;
+      letter-spacing: 2px;
+      opacity: 0;
+      transition: opacity 2s ease 1s;
+    }
+    .apology-fine-print.shown { opacity: 1; }
+
+    /* ========== FLASH OVERLAY ========== */
+    #flash {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 999;
+      transition: opacity 0.05s;
+    }
+
+    /* ========== BODY SHAKE ========== */
+    body.shaking {
+      animation: body-shake 0.08s linear infinite;
+    }
+    @keyframes body-shake {
+      0%  { transform: translate(0,0); }
+      25% { transform: translate(-5px,-5px); }
+      50% { transform: translate(5px,5px); }
+      75% { transform: translate(-5px,5px); }
+    }
+
+    /* ========== SCANLINES ========== */
+    #scanlines {
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,0.15) 3px,
+        rgba(0,0,0,0.15) 4px
+      );
+      pointer-events: none;
+      z-index: 998;
+      opacity: 0.4;
+    }
+
+    /* ========== SKIP BUTTON ========== */
+    #skip-btn {
+      position: fixed;
+      bottom: 20px; right: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.3);
+      font-size: 12px;
+      padding: 8px 16px;
+      cursor: pointer;
+      letter-spacing: 4px;
+      font-family: inherit;
+      z-index: 9999;
+      transition: all 0.3s;
+    }
+    #skip-btn:hover { color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.3); }
+
+    /* ========== PARTICLES ========== */
+    #particle-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<canvas id="particle-canvas"></canvas>
+<div id="scanlines"></div>
+<div id="flash"></div>
+
+<!-- STAGE 1: ALERT -->
+<div class="stage" id="stage-alert">
+  <div class="alert-border">
+    <div class="alert-label">⚠ EMERGENCY BROADCAST ⚠</div>
+    <div class="alert-title">重　大　発　表</div>
+    <div class="alert-sub">全人類への緊急通知</div>
+  </div>
+</div>
+
+<!-- STAGE 2: COUNTDOWN -->
+<div class="stage" id="stage-countdown">
+  <div class="countdown-ring"></div>
+  <div class="countdown-ring-2"></div>
+  <div class="countdown-wrap">
+    <div class="countdown-label">カウントダウン</div>
+    <div id="countdown-num">5</div>
+  </div>
+</div>
+
+<!-- STAGE 3: DRAMATIC BUILD -->
+<div class="stage" id="stage-build">
+  <div class="build-lines">
+    <div class="build-line">これは</div>
+    <div class="build-line emphasis">人類史上</div>
+    <div class="build-line">最も重要な</div>
+    <div class="build-line emphasis">メッセージである</div>
+    <div class="build-line" style="margin-top:20px; color:#666; font-size: clamp(11px,1.5vw,18px)">銀河系の全エネルギーを結集して</div>
+    <div class="build-line" style="color:#666; font-size: clamp(11px,1.5vw,18px)">この言葉をお届けします</div>
+  </div>
+</div>
+
+<!-- STAGE 4: HEAVENLY -->
+<div class="stage" id="stage-heaven">
+  <div class="heaven-rays" id="heaven-rays"></div>
+  <div class="heaven-title">
+    天上より光臨<br>
+    <span style="font-size:0.6em; color:#ccc; font-weight:400">一万の天使が舞い降りました</span>
+  </div>
+</div>
+
+<!-- STAGE 5: EARTHQUAKE -->
+<div class="stage" id="stage-quake">
+  <div class="crack-container" id="crack-container"></div>
+  <div class="quake-warning">！！！！！</div>
+</div>
+
+<!-- STAGE 6: ORCHESTRA -->
+<div class="stage" id="stage-orchestra">
+  <div class="musical-notes" id="musical-notes"></div>
+  <div class="orchestra-text">🎻 交響楽団 第九宇宙フィルハーモニー 渾身の演奏中 🎻</div>
+  <div class="stage-title">
+    この瞬間のために<br>
+    <span style="color:#888; font-size:0.5em; font-weight:400">宇宙138億年の歴史が紡がれました</span>
+  </div>
+</div>
+
+<!-- STAGE 7: THE APOLOGY -->
+<div class="stage" id="stage-apology">
+  <div class="apology-wrapper">
+    <div id="apology-text">ごめんなさい</div>
+    <div class="apology-fine-print" id="apology-fine">
+      以上です
+    </div>
+  </div>
+</div>
+
+<button id="skip-btn" onclick="skipToEnd()">SKIP</button>
+
+<script>
+// ================================================================
+// UTILITIES
+// ================================================================
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function flash(duration = 80) {
+  const f = $('flash');
+  f.style.opacity = '1';
+  setTimeout(() => f.style.opacity = '0', duration);
+}
+
+function shakeBody(ms) {
+  document.body.classList.add('shaking');
+  setTimeout(() => document.body.classList.remove('shaking'), ms);
+}
+
+function showStage(id) {
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+function hideAllStages() {
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+}
+
+// ================================================================
+// BACKGROUND CANVAS — starfield + lightning
+// ================================================================
+const bgCanvas = $('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+
+function resizeCanvases() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+  pCanvas.width = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+}
+
+const stars = Array.from({length: 300}, () => ({
+  x: Math.random(), y: Math.random(),
+  r: Math.random() * 1.5 + 0.3,
+  speed: Math.random() * 0.0002 + 0.0001,
+  brightness: Math.random()
+}));
+
+let lightningBolts = [];
+let bgAnimId;
+let bgTime = 0;
+
+function spawnLightning() {
+  const W = bgCanvas.width, H = bgCanvas.height;
+  const startX = Math.random() * W;
+  const points = [{x: startX, y: 0}];
+  let cx = startX, cy = 0;
+  while (cy < H * 1.2) {
+    cx += (Math.random() - 0.5) * 80;
+    cy += 30 + Math.random() * 40;
+    points.push({x: cx, y: cy});
+  }
+  lightningBolts.push({points, life: 1, maxLife: 0.3 + Math.random() * 0.3, color: Math.random() > 0.5 ? '#4af' : '#fa4'});
+}
+
+function drawBg() {
+  const W = bgCanvas.width, H = bgCanvas.height;
+  bgCtx.clearRect(0,0,W,H);
+
+  // Stars
+  stars.forEach(s => {
+    s.brightness = (Math.sin(bgTime * s.speed * 1000 + s.x * 99) + 1) / 2;
+    bgCtx.beginPath();
+    bgCtx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+    bgCtx.fillStyle = `rgba(255,255,255,${0.3 + s.brightness * 0.7})`;
+    bgCtx.fill();
+  });
+
+  // Lightning
+  lightningBolts = lightningBolts.filter(b => b.life > 0);
+  lightningBolts.forEach(b => {
+    bgCtx.save();
+    bgCtx.globalAlpha = b.life;
+    bgCtx.strokeStyle = b.color;
+    bgCtx.lineWidth = 2 + b.life * 3;
+    bgCtx.shadowBlur = 20;
+    bgCtx.shadowColor = b.color;
+    bgCtx.beginPath();
+    b.points.forEach((p, i) => i === 0 ? bgCtx.moveTo(p.x, p.y) : bgCtx.lineTo(p.x, p.y));
+    bgCtx.stroke();
+    bgCtx.restore();
+    b.life -= 0.04;
+  });
+
+  bgTime++;
+  bgAnimId = requestAnimationFrame(drawBg);
+}
+
+// ================================================================
+// PARTICLE CANVAS
+// ================================================================
+const pCanvas = $('particle-canvas');
+const pCtx = pCanvas.getContext('2d');
+let particles = [];
+let pAnimId;
+
+function spawnBurst(x, y, count, colors) {
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 / count) * i + Math.random() * 0.5;
+    const speed = 3 + Math.random() * 8;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+      r: 3 + Math.random() * 6,
+      life: 1,
+      decay: 0.01 + Math.random() * 0.02,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    });
+  }
+}
+
+function spawnRain(count) {
+  const W = pCanvas.width;
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: -20 - Math.random() * 200,
+      vx: (Math.random() - 0.5) * 2,
+      vy: 5 + Math.random() * 8,
+      r: 2 + Math.random() * 4,
+      life: 1,
+      decay: 0.003 + Math.random() * 0.006,
+      color: `hsl(${Math.random() * 60 + 30},100%,70%)`
+    });
+  }
+}
+
+function drawParticles() {
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  particles = particles.filter(p => p.life > 0);
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.15;
+    p.life -= p.decay;
+    pCtx.save();
+    pCtx.globalAlpha = p.life;
+    pCtx.fillStyle = p.color;
+    pCtx.shadowBlur = 10;
+    pCtx.shadowColor = p.color;
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    pCtx.fill();
+    pCtx.restore();
+  });
+  pAnimId = requestAnimationFrame(drawParticles);
+}
+
+// ================================================================
+// HEAVEN RAYS
+// ================================================================
+function buildHeavenRays() {
+  const container = $('heaven-rays');
+  container.innerHTML = '';
+  const W = window.innerWidth;
+  const count = 18;
+  for (let i = 0; i < count; i++) {
+    const ray = document.createElement('div');
+    ray.className = 'heaven-ray';
+    const x = (W / count) * i + Math.random() * (W / count);
+    const angle = (Math.random() - 0.5) * 30;
+    ray.style.left = x + 'px';
+    ray.style.transform = `rotate(${angle}deg)`;
+    ray.style.animationDelay = (i * 0.08) + 's';
+    container.appendChild(ray);
+    setTimeout(() => {
+      ray.style.transition = `opacity ${0.5 + Math.random()}s ease`;
+      ray.style.opacity = (0.1 + Math.random() * 0.4).toString();
+    }, i * 80);
+  }
+}
+
+// ================================================================
+// CRACKS
+// ================================================================
+function buildCracks() {
+  const container = $('crack-container');
+  container.innerHTML = '';
+  const W = window.innerWidth, H = window.innerHeight;
+  for (let i = 0; i < 12; i++) {
+    const crack = document.createElement('div');
+    crack.className = 'crack';
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const length = 60 + Math.random() * 200;
+    const angle = Math.random() * 180;
+    crack.style.left = x + 'px';
+    crack.style.top = y + 'px';
+    crack.style.width = length + 'px';
+    crack.style.height = '2px';
+    crack.style.transform = `rotate(${angle}deg)`;
+    crack.style.opacity = '0';
+    crack.style.transition = `opacity 0.1s ease ${i * 0.05}s`;
+    container.appendChild(crack);
+    setTimeout(() => crack.style.opacity = '1', 50 + i * 50);
+  }
+}
+
+// ================================================================
+// MUSICAL NOTES
+// ================================================================
+const noteChars = ['♩','♪','♫','♬','𝅘𝅥𝅮','𝅗𝅥'];
+let noteInterval;
+
+function startNotes() {
+  const container = $('musical-notes');
+  noteInterval = setInterval(() => {
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.textContent = noteChars[Math.floor(Math.random() * noteChars.length)];
+    note.style.left = (Math.random() * 100) + '%';
+    note.style.bottom = (Math.random() * 30) + '%';
+    const dur = 1.5 + Math.random() * 2;
+    const hue = Math.floor(Math.random() * 60 + 30);
+    note.style.color = `hsl(${hue},100%,70%)`;
+    note.style.animationDuration = dur + 's';
+    container.appendChild(note);
+    setTimeout(() => note.remove(), dur * 1000);
+  }, 80);
+}
+
+function stopNotes() {
+  clearInterval(noteInterval);
+}
+
+// ================================================================
+// COUNTDOWN
+// ================================================================
+async function runCountdown() {
+  showStage('stage-countdown');
+  for (let n = 5; n >= 1; n--) {
+    const el = $('countdown-num');
+    el.textContent = n;
+    el.style.animation = 'none';
+    void el.offsetHeight; // reflow
+    el.style.animation = 'countdown-zoom 0.8s ease-out forwards';
+    if (n <= 2) {
+      spawnLightning();
+      shakeBody(200);
+      flash(60);
+    }
+    if (n === 1) {
+      const W = pCanvas.width, H = pCanvas.height;
+      spawnBurst(W/2, H/2, 40, ['#ffd700','#ff6600','#ff0000','#ffffff']);
+    }
+    await sleep(1000);
+  }
+}
+
+// ================================================================
+// MAIN SEQUENCE
+// ================================================================
+let ended = false;
+
+async function mainSequence() {
+  resizeCanvases();
+  drawBg();
+  drawParticles();
+
+  // --- STAGE 1: ALERT (3s) ---
+  showStage('stage-alert');
+  spawnLightning();
+  await sleep(300);
+  spawnLightning();
+  await sleep(2700);
+
+  // --- STAGE 2: COUNTDOWN ---
+  await runCountdown();
+
+  // --- Transition flash ---
+  flash(200);
+  shakeBody(400);
+  spawnLightning(); spawnLightning();
+  hideAllStages();
+  await sleep(400);
+
+  // --- STAGE 3: DRAMATIC BUILD ---
+  showStage('stage-build');
+  const lines = document.querySelectorAll('#stage-build .build-line');
+  for (let i = 0; i < lines.length; i++) {
+    await sleep(i === 3 ? 800 : 500);
+    lines[i].classList.add('visible');
+  }
+  await sleep(2000);
+
+  // --- STAGE 4: HEAVEN ---
+  flash(150);
+  showStage('stage-heaven');
+  buildHeavenRays();
+  const W = pCanvas.width, H = pCanvas.height;
+  spawnRain(200);
+  spawnBurst(W/2, H * 0.3, 60, ['#fffde7','#ffe082','#fff9c4','#ffecb3','#ffffff']);
+  await sleep(3000);
+
+  // --- STAGE 5: EARTHQUAKE ---
+  showStage('stage-quake');
+  buildCracks();
+  shakeBody(2000);
+  spawnLightning(); spawnLightning(); spawnLightning();
+  flash(100);
+  await sleep(400);
+  spawnLightning();
+  flash(80);
+  await sleep(400);
+  spawnLightning(); spawnLightning();
+  flash(120);
+  await sleep(1200);
+
+  // --- STAGE 6: ORCHESTRA ---
+  flash(200);
+  showStage('stage-orchestra');
+  startNotes();
+  spawnBurst(W/2, H/2, 80, ['#ffd700','#ff6600','#e040fb','#40c4ff','#69f0ae']);
+  spawnLightning();
+  await sleep(3500);
+  stopNotes();
+
+  // --- STAGE 7: APOLOGY ---
+  flash(300);
+  shakeBody(300);
+  spawnLightning(); spawnLightning(); spawnLightning();
+  spawnBurst(W/2, H/2, 120, ['#ffffff','#ffd700','#ff0000','#00ffff','#ff00ff']);
+  hideAllStages();
+  await sleep(600);
+
+  // Moment of silence + dramatic reveal
+  showStage('stage-apology');
+  await sleep(1500);
+
+  const apology = $('apology-text');
+  apology.classList.add('shown');
+  await sleep(2000);
+
+  $('apology-fine').classList.add('shown');
+  $('skip-btn').style.display = 'none';
+
+  ended = true;
+}
+
+// ================================================================
+// SKIP
+// ================================================================
+function skipToEnd() {
+  if (ended) return;
+  ended = true;
+  stopNotes();
+  hideAllStages();
+  showStage('stage-apology');
+  const apology = $('apology-text');
+  apology.style.transition = 'none';
+  apology.style.opacity = '1';
+  $('apology-fine').style.transition = 'none';
+  $('apology-fine').style.opacity = '1';
+  $('skip-btn').style.display = 'none';
+}
+
+// ================================================================
+// LIGHTNING AUTO SPAWN during earlier stages
+// ================================================================
+setInterval(() => {
+  if (!ended || document.querySelector('.stage.active') !== $('stage-apology')) {
+    if (Math.random() < 0.4) spawnLightning();
+  }
+}, 600);
+
+// ================================================================
+// RESIZE
+// ================================================================
+window.addEventListener('resize', resizeCanvases);
+
+// ================================================================
+// START
+// ================================================================
+mainSequence();
+</script>
+</body>
+</html>
