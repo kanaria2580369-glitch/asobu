@@ -312,6 +312,8 @@ export class BattleScene extends Phaser.Scene {
 
     const endCheck = this.manager.checkBattleEnd();
     if (endCheck.ended) {
+      // Player's action ended the battle — notify RL before leaving
+      this.manager.notifyRLResult(true, endCheck.playerWon);
       if (endCheck.playerWon) {
         this.showMessage(result.message, () => this.handleVictory());
       } else {
@@ -325,9 +327,15 @@ export class BattleScene extends Phaser.Scene {
       const enemyResult = this.manager.enemyAction();
       this.updateHPTexts();
       const endCheck2 = this.manager.checkBattleEnd();
-      if (endCheck2.ended && !endCheck2.playerWon) {
-        this.showMessage(enemyResult.message, () => this.handleDefeat());
+      if (endCheck2.ended) {
+        this.manager.notifyRLResult(true, endCheck2.playerWon);
+        if (!endCheck2.playerWon) {
+          this.showMessage(enemyResult.message, () => this.handleDefeat());
+        } else {
+          this.showMessage(enemyResult.message, () => this.handleVictory());
+        }
       } else {
+        this.manager.notifyRLResult(false, false);
         this.showMessage(enemyResult.message, () => {
           this.uiState = 'command';
           this.updateCommandUI();
