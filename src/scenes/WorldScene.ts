@@ -8,6 +8,7 @@ import { INITIAL_PLAYER } from '../data/playerData';
 import { EncounterSystem } from '../systems/EncounterSystem';
 import { EnemyData } from '../data/enemies';
 import { VirtualPad } from '../ui/VirtualPad';
+import { generateCharacterSheetPdf } from '../utils/PdfGenerator';
 
 // マップレイアウト (0=草, 1=壁, 2=道, 3=水)
 const MAP_DATA: TileType[][] = [
@@ -47,6 +48,7 @@ export class WorldScene extends Phaser.Scene {
 
   // UI
   private statusText!: Phaser.GameObjects.Text;
+  private pdfKey!: Phaser.Input.Keyboard.Key;
 
   constructor() {
     super({ key: SCENE_KEYS.WORLD });
@@ -63,6 +65,7 @@ export class WorldScene extends Phaser.Scene {
   create(): void {
     this.encounter = new EncounterSystem();
     this.cursors = this.input.keyboard!.createCursorKeys();
+    this.pdfKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 
     this.drawMap();
     this.createPlayer();
@@ -146,7 +149,6 @@ export class WorldScene extends Phaser.Scene {
 
   private createUI(): void {
     // ステータスウィンドウ（カメラに固定）
-    const cam = this.cameras.main;
     this.statusText = this.add.text(8, 8, '', {
       fontFamily: '"Courier New", monospace',
       fontSize: '13px',
@@ -154,6 +156,14 @@ export class WorldScene extends Phaser.Scene {
       backgroundColor: '#00000099',
       padding: { x: 8, y: 6 },
     }).setScrollFactor(0).setDepth(10);
+
+    this.add.text(GAME_WIDTH - 8, 8, '[P] PDF', {
+      fontFamily: '"Courier New", monospace',
+      fontSize: '11px',
+      color: '#aaaaff',
+      backgroundColor: '#00000099',
+      padding: { x: 6, y: 4 },
+    }).setScrollFactor(0).setDepth(10).setOrigin(1, 0);
 
     this.updateStatusUI();
   }
@@ -166,6 +176,10 @@ export class WorldScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
+    if (Phaser.Input.Keyboard.JustDown(this.pdfKey)) {
+      generateCharacterSheetPdf(this.player.toStats());
+    }
+
     if (this.transitioning) return;
     this.moveCooldown -= delta;
     if (this.moveCooldown > 0) return;

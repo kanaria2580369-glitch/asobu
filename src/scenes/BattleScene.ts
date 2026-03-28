@@ -375,7 +375,7 @@ export class BattleScene extends Phaser.Scene {
     this.showMessage(`${this.player.name} は たおれた……`, () => {
       this.cameras.main.fadeOut(600, 0, 0, 0);
       this.cameras.main.once('camerafadeoutcomplete', () => {
-        this.scene.start(SCENE_KEYS.GAME_OVER);
+        this.scene.start(SCENE_KEYS.GAME_OVER, { player: this.player });
       });
     });
   }

@@ -9,6 +9,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "jspdf": "^4.2.1",
     "phaser": "^3.90.0"
   },
   "devDependencies": {

@@ -1,9 +1,17 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, SCENE_KEYS } from '../constants';
+import { Character } from '../entities/Character';
+import { generateCharacterSheetPdf } from '../utils/PdfGenerator';
 
 export class GameOverScene extends Phaser.Scene {
+  private player?: Character;
+
   constructor() {
     super({ key: SCENE_KEYS.GAME_OVER });
+  }
+
+  init(data: { player?: Character }): void {
+    this.player = data?.player;
   }
 
   create(): void {
@@ -32,6 +40,24 @@ export class GameOverScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
     });
+
+    if (this.player) {
+      const pdfText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 90, '[P] キャラクターシートを保存', {
+        fontFamily: '"Courier New", monospace',
+        fontSize: '15px',
+        color: '#aaaaff',
+        backgroundColor: '#00000099',
+        padding: { x: 10, y: 6 },
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+      pdfText.on('pointerdown', () => {
+        generateCharacterSheetPdf(this.player!.toStats());
+      });
+
+      this.input.keyboard!.on('keydown-P', () => {
+        generateCharacterSheetPdf(this.player!.toStats());
+      });
+    }
 
     const toTitle = () => {
       this.cameras.main.fadeOut(500, 0, 0, 0);
